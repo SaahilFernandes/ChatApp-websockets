@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import {React, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 
 const Login = () => {
+    const { login } = useAuth();
   const [isLoginForm, setIsLoginForm] = useState(true); // Toggle between login/register forms
   const [isFormVisible, setIsFormVisible] = useState(false); // State for sliding animation
   const [loginData, setLoginData] = useState({ loginIdentifier: '', password: '' });
@@ -23,6 +26,7 @@ const Login = () => {
       const data = await response.json();
       console.log('Login response:', data);
       if (response.ok) {
+        login(data.accessToken);
         alert('Login successful');
         navigate('/home');
       } else {
@@ -190,14 +194,14 @@ const Login = () => {
       <style jsx>{`
         /* Main container styles */
         .login-page-container {
-        display: flex;
-        justify-content: flex-start; /* Changed from center to flex-start */
-        align-items: center;
-        min-height: 100vh;
-        background-color:#242424;
-        padding: 50px;
-        box-sizing: border-box;
-        width: 100%;
+          display: flex;
+          justify-content: flex-start; /* Changed from center to flex-start */
+          align-items: center;
+          min-height: 100vh;
+          background-color:#242424;
+          padding: 50px;
+          box-sizing: border-box;
+          width: 100%;
         }
 
 
@@ -277,6 +281,9 @@ const Login = () => {
           opacity: 0;
           visibility: hidden;
           transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+          display: flex; /* Added to help center form-container */
+          justify-content: center; /* Added to help center form-container */
+          align-items: center; /* Added to help center form-container */
         }
 
         /* Animation triggered state */
@@ -300,8 +307,8 @@ const Login = () => {
           width: 100%;
           max-width: 360px;
           padding: 40px 30px;
-          margin: 0 auto;
-          height: 100%;
+          margin: 0 auto; /* Centering within the form-panel */
+         /* height: 100%; /* Removed - let content define height */
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -310,12 +317,12 @@ const Login = () => {
         .form-title {
           font-size: 1.8rem;
           font-weight: 600;
-          color: #333;
+          color: #333; /* Default dark color for title */
           margin-bottom: 8px;
         }
 
         .form-subtitle {
-          color: #666;
+          color: #666; /* Default grey for subtitle */
           margin-bottom: 30px;
           font-size: 0.95rem;
         }
@@ -334,7 +341,17 @@ const Login = () => {
           font-size: 0.95rem;
           transition: border-color 0.3s;
           box-sizing: border-box;
+          /* --- THIS IS THE CHANGE --- */
+          color: #000000; /* Set color of TYPED text to black */
+          /* -------------------------- */
         }
+
+        /* Placeholder text color remains default grey */
+        .login-form input::placeholder,
+        .register-form input::placeholder {
+          color: #999; /* Or adjust as needed */
+        }
+
 
         .login-form input:focus,
         .register-form input:focus {
@@ -355,6 +372,7 @@ const Login = () => {
           display: flex;
           align-items: center;
           cursor: pointer;
+          color: #666; /* Label text color */
         }
 
         .remember-me input {
@@ -362,7 +380,7 @@ const Login = () => {
         }
 
         .forgot-password {
-          color: #4285F4;
+          color: #4285F4; /* Link color */
           text-decoration: none;
         }
 
@@ -419,13 +437,15 @@ const Login = () => {
           text-align: center;
           margin-top: 25px;
           font-size: 0.9rem;
-          color: #666;
+        }
+        .account-toggle p {
+           color: #666; /* Text color */
         }
 
         .account-toggle button {
           background: none;
           border: none;
-          color: #4285F4;
+          color: #4285F4; /* Link color */
           font-weight: 600;
           cursor: pointer;
           padding: 0;
@@ -444,20 +464,20 @@ const Login = () => {
             width: 100%;
             max-width: 100%;
           }
-          
+
           .sliding-container.form-active .logo-panel {
             width: 40%;
           }
-          
+
           .form-panel {
             width: 60%;
           }
-          
+
           .sliding-container.form-active .form-panel {
             right: 0;
             width: 60%;
           }
-          
+
           .app-title {
             font-size: 3rem;
           }
@@ -468,20 +488,28 @@ const Login = () => {
             width: 0;
             opacity: 0;
           }
-          
+
           .form-panel {
             width: 100%;
+            /* Need to reset initial position for this breakpoint */
+            right: -100%;
+            opacity: 0;
+            visibility: hidden;
           }
-          
+
           .sliding-container.form-active .form-panel {
             width: 100%;
+            right: 0; /* Slide in fully */
+            opacity: 1;
+            visibility: visible;
           }
-          
+
           .form-container {
             padding: 30px 20px;
           }
         }
-      `}</style>
+      `}
+     </style>
     </div>
   );
 };

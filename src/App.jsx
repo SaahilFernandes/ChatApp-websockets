@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Import your page components
 import Login from './components/Login'; // Assuming Login.jsx is here
-import Navbar from './components/Navbar';
+import Home from './pages/Home';
 // ... import other components/pages that will be routes
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
         {/* Render the Login component for the root path or a specific /login path */}
         <Route path="/" element={<Login />} />
         {/* Or <Route path="/login" element={<Login />} /> */}
-
+        <Route path="/home" element={<Home/>} />
         {/* Define other routes */}
        
       </Routes>
