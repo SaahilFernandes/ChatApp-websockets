@@ -1,0 +1,491 @@
+/* Basic Reset/Body Styling */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #242424; /* Match background */
+  color: #333; /* Default text color for areas like main chat */
+  height: 100vh; /* Ensure body takes full height */
+  overflow: hidden; /* Hide body overflow */
+}
+
+#root { /* Or the ID of your main app container */
+    height: 100%; /* Ensure the main React container takes full height */
+}
+
+.chat-page-container {
+  display: flex;
+  flex-direction: column; /* Stack header and content */
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Hide potential overflow */
+  background-color: #242424;
+  width: 200vh; /* Background for the whole page */
+}
+
+/* Top App Header Styles (Minimal, just App Title and User Actions) */
+.app-header-top {
+  background-color: #1a1a1a; /* Dark background */
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between; /* Space out title and actions */
+  align-items: center;
+  flex-shrink: 0; /* Prevent shrinking */
+  height: 50px; /* Fixed height for header */
+  box-sizing: border-box; /* Include padding in height */
+  width: 100%; /* Ensure header spans full width */
+}
+
+.header-app-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    /* No flex-grow needed here based on screenshot */
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  /* No flex-grow needed here based on screenshot */
+}
+
+.admin-indicator {
+    font-size: 0.8em;
+    margin-right: 10px;
+    padding: 2px 5px;
+    background-color: #ffc107; /* Yellow/Orange background */
+    color: #343a40; /* Dark text */
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.logged-in-user-name {
+    margin-right: 15px;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.header-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-left: 0;
+  font-size: 1em;
+  padding: 0 5px;
+  opacity: 0.8;
+}
+
+.header-button:hover {
+    text-decoration: underline;
+    opacity: 1;
+}
+
+/* Main Chat Content Area (Sidebar + Main Chat) */
+.chat-content-area {
+  display: flex; /* Creates two columns */
+  flex-grow: 1; /* Makes this area fill the remaining height */
+  overflow: hidden; /* Important for containing scrolling areas */
+  height: calc(100vh - 50px); /* Full height minus header height */
+  width: 100%; /* Ensure content area spans full width */
+}
+
+/* Left Sidebar Styles */
+.chat-sidebar {
+  width: 400px; /* Fixed width for sidebar (like WhatsApp Web) */
+  background-color: #1a1a1a; /* Black background */
+  color: white;
+  display: flex;
+  flex-direction: column; /* Stack header, search, and list */
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  border-right: 1px solid #333; /* Separator line */
+  /* Ensure sidebar height matches content area height */
+  height: 100%; /* Or flex-basis: auto; */
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid #333; /* Separator */
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.sidebar-header h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.5em;
+  text-align: center; /* Center title in sidebar header */
+}
+
+.search-bar {
+  display: flex;
+}
+
+.search-bar input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #555; /* Darker border */
+  border-radius: 4px;
+  margin-right: 0px;
+  background-color: #242424; /* Darker input background */
+  color: white; /* Text color */
+  font-size: 0.9em;
+}
+.search-bar input::placeholder {
+    color: #aaa;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #4285F4;
+    box-shadow: 0 0 3px rgba(66, 133, 244, 0.5);
+}
+
+
+.conversation-list {
+  flex-grow: 1; /* Makes the list fill available space */
+  overflow-y: auto; /* Enable scrolling if list is long */
+  /* Hide scrollbar for cleaner look */
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.conversation-list::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px; /* Increased padding */
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+  transition: background-color 0.2s ease;
+}
+
+.conversation-item:hover {
+  background-color: #333; /* Highlight on hover */
+}
+
+.conversation-item.selected {
+    background-color: #444; /* Highlight selected item */
+}
+
+.conversation-item .avatar {
+  width: 35px; /* Slightly smaller avatar */
+  height: 35px; /* Slightly smaller avatar */
+  border-radius: 50%;
+  margin-right: 12px; /* Adjusted margin */
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.conversation-item span {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1em;
+    opacity: 0.9;
+}
+
+.sidebar-message {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+
+/* Right Main Chat Area Styles */
+.chat-main {
+  flex-grow: 1; /* Makes the main area fill remaining width */
+  display: flex;
+  flex-direction: column; /* Stack header, messages, input */
+  background-color: white; /* White background */
+  overflow: hidden; /* Important for containing scrolling messages */
+  /* Ensure main area height matches content area height */
+  height: 100%;
+}
+
+.chat-header-main {
+  background-color: #87CEEB; /* Light blue background */
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0; /* Prevent header from shrinking */
+  border-bottom: 1px solid #ccc; /* Separator */
+}
+
+ .chat-header-main .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+   object-fit: cover;
+   flex-shrink: 0;
+}
+
+.chat-header-main h3 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
+  flex-grow: 1; /* Allow name to take space */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatting-with-indicator {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85em;
+    color: #666;
+    background-color: #f0f0f0;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+
+/* --- Message Bubble Styles (Matching Screenshot) --- */
+.messages-area-main {
+  flex-grow: 1; /* Messages area takes available space */
+  padding: 10px 20px;
+  overflow-y: auto; /* Enable scrolling for messages */
+  display: flex;
+  flex-direction: column; /* Stack messages vertically */
+  /* Hide scrollbar */
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.messages-area-main::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+
+.message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 18px; /* More rounded corners */
+    max-width: 65%;
+    word-wrap: break-word;
+    line-height: 1.4;
+    position: relative;
+    display: flex; /* Use flex for sender/text layout */
+    flex-direction: column; /* Stack sender info and text */
+    font-size: 0.95em;
+}
+
+.message-sender {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: rgba(0, 0, 0, 0.6); /* Darker grey for sender name */
+    margin-bottom: 2px;
+    width: 100%;
+    word-break: break-word;
+}
+
+.message-text {
+     flex-grow: 1;
+     color: #333;
+}
+
+
+.my-message {
+    align-self: flex-end; /* Align to the right */
+    background-color: #007bff; /* Blue background for sent messages (matching screenshot bubble) */
+    color: white; /* White text inside blue bubble */
+}
+.my-message .message-text {
+    color: white; /* Ensure text is white */
+}
+
+
+.other-message {
+    align-self: flex-start; /* Align to the left */
+    background-color: #e9e9eb; /* Light grey background for received messages (matching screenshot bubble) */
+    color: #333; /* Dark text */
+}
+/* --- End Message Bubble Styles --- */
+
+
+.message-input-area {
+  padding: 10px 20px;
+  border-top: 1px solid #eee; /* Separator */
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: #fff; /* White background for input area */
+}
+
+.message-input-area input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px; /* Rounded input */
+  margin-right: 10px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+ .message-input-area button {
+  padding: 10px 20px;
+  background-color: #007bff; /* Blue send button (matching screenshot) */
+  color: white;
+  border: none;
+  border-radius: 20px; /* Rounded button */
+  cursor: pointer;
+  font-size: 1em;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+ }
+  .message-input-area button:hover:not(:disabled) {
+    background-color: #0056b3; /* Darker blue on hover */
+ }
+
+ .message-input-area button:disabled {
+     background-color: #aaa;
+     cursor: not-allowed;
+ }
+
+ /* Placeholder for auto-scroll div - ensure it doesn't take space */
+ .messages-area-main > div:last-child {
+     min-height: 0;
+     flex-shrink: 0;
+     flex-grow: 0;
+ }
+
+/* Responsive adjustments (Optional, but good practice) */
+@media (max-width: 768px) {
+    .chat-sidebar {
+        width: 200px; /* Smaller sidebar on tablets */
+    }
+    /* Add other adjustments as needed for medium screens */
+}
+
+@media (max-width: 576px) {
+   /* Layout for very small screens: Sidebar stacked on top of chat */
+   .chat-content-area {
+       flex-direction: column; /* Stack sidebar and main area */
+       height: calc(100vh - 50px); /* Full height minus header */
+   }
+   .chat-sidebar {
+       width: 100%; /* Full width */
+       height: 150px; /* Give sidebar a fixed height (adjust as needed) */
+       flex-direction: column;
+       overflow-y: auto;
+       border-right: none;
+       border-bottom: 1px solid #333;
+   }
+    .sidebar-header {
+        padding: 10px 20px; /* Reduced padding */
+    }
+    .sidebar-header h2 {
+        margin-bottom: 10px;
+    }
+
+
+   .chat-main {
+       height: calc(100% - 150px); /* Fill remaining height below sidebar */
+       overflow-y: auto;
+   }
+
+    .messages-area-main {
+        padding: 10px;
+    }
+    .message {
+         max-width: 90%; /* Wider messages on small screens */
+    }
+    .message-input-area {
+        padding: 10px;
+    }
+    .message-input-area input {
+        padding: 8px 12px; /* Slightly smaller input padding */
+    }
+     .message-input-area button {
+        padding: 8px 15px; /* Slightly smaller button padding */
+    }
+
+    .chatting-with-indicator {
+        padding: 5px;
+        margin-bottom: 5px;
+    }
+
+}
+/* --- Message Bubble Styles (Adjusted) --- */
+.messages-area-main {
+  flex-grow: 1;
+  padding: 10px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.messages-area-main::-webkit-scrollbar {
+  display: none;
+}
+
+.message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 18px;
+    max-width: 65%; /* Limit message width */
+    /* word-wrap: break-word; */ /* word-break is generally preferred */
+    line-height: 1.4;
+    position: relative;
+    display: flex; /* Use flexbox for internal layout */
+    flex-direction: column; /* Stack children vertically */
+    font-size: 0.95em;
+    /* Added: Allows words to break and wrap if they exceed the container width */
+    word-break: break-word;
+    overflow-wrap: break-word; /* Fallback for older browsers */
+}
+
+.message-sender {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: rgba(0, 0, 0, 0.6); /* Darker grey for sender name */
+    margin-bottom: 2px; /* Small space between sender and text */
+    /* Ensure sender takes full bubble width if needed, but respects parent flex */
+    width: 100%; /* Added to help it take the flex item width */
+    word-break: break-word; /* Allow sender name/indicator to wrap if super long */
+    overflow-wrap: break-word;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.message-text {
+     /* Text takes remaining space */
+     flex-grow: 1; /* Allow text to grow */
+     color: #333; /* Darker text color */
+     /* Already handled by parent .message word-break, but good practice */
+     word-break: break-word;
+     overflow-wrap: break-word;
+}
+
+
+.my-message {
+    align-self: flex-end; /* Align to the right */
+    background-color: #007bff; /* Blue background for sent messages */
+    color: white; /* White text inside blue bubble */
+    /* Adjust sender color for my messages if needed for contrast */
+    /* .my-message .message-sender { color: rgba(255, 255, 255, 0.8); } */
+}
+/* Ensure text color is white inside blue bubble */
+.my-message .message-text {
+    color: white;
+}
+.my-message .message-sender {
+    color: rgba(255, 255, 255, 0.8); /* Lighter grey for sender in blue bubble */
+}
+
+
+.other-message {
+    align-self: flex-start; /* Align to the left */
+    background-color: #e9e9eb; /* Light grey background for received messages */
+    color: #333; /* Dark text */
+}
+/* Ensure text color is dark inside grey bubble */
+.other-message .message-text {
+    color: #333;
+}
+.other-message .message-sender {
+    color: rgba(0, 0, 0, 0.6); /* Darker grey for sender in grey bubble */
+}
