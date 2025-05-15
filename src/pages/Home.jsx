@@ -13,8 +13,7 @@ function Home() {
   const messagesEndRef = useRef(null);
   const [userList, setUserList] = useState([]); // List of online usernames
   const [searchText, setSearchText] = useState(''); // For the search input in the sidebar
-  const [loadingHistory, setLoadingHistory] = useState(false); // State to indicate history loading
-
+  // const [loadingHistory, setLoadingHistory] = useState(false); // REMOVED
 
   // --- Effect to scroll to bottom whenever messages change ---
   useEffect(() => {
@@ -30,8 +29,8 @@ function Home() {
        setTimeout(() => {
          socket.emit('getUsers');
        }, 100);
-      // Optional: Maybe load broadcast history by default on connect
-       handleSelectEveryone(); // Automatically select broadcast on connect
+      // Automatically select broadcast on connect and load its messages
+       handleSelectEveryone();
     }
 
     function onDisconnect() {
@@ -40,25 +39,19 @@ function Home() {
       setUserList([]); // Clear user list on disconnect
       setMessages([]); // Clear messages on disconnect/logout
       setSelectedRecipient(''); // Reset recipient selection
-      setLoadingHistory(false);
+      // setLoadingHistory(false); // REMOVED
     }
 
     // Handler for ANY new message from the server (broadcast or private)
-    // These arrive AFTER history might have been loaded.
     function onChatMessage(message) {
       console.log('Received new message:', message);
 
-      // Add the message to state ONLY if it belongs to the currently selected conversation
-      // This prevents seeing messages from other private chats.
       const currentUser = user?.name;
       const isBroadcast = !message.private || message.recipient === null;
 
       if (selectedRecipient === '' && isBroadcast) {
-          // If currently viewing broadcast and the message is broadcast
            setMessages(previousMessages => [...previousMessages, message]);
       } else if (selectedRecipient !== '' && message.private) {
-          // If currently viewing a private chat and the message is private
-          // Check if the message is between the current user and the selected recipient (in either direction)
           if (
               (message.senderId === currentUser && message.recipient === selectedRecipient) ||
               (message.senderId === selectedRecipient && message.recipient === currentUser)
@@ -67,36 +60,30 @@ function Home() {
           }
       } else {
           console.log(`Received message for a different conversation (Selected: ${selectedRecipient}, Message: ${message.senderId} -> ${message.recipient || 'everyone'}). Ignoring for current view.`);
-          // Optional: Show a notification that a new message arrived in another chat
       }
     }
 
 
-    // --- Handler for receiving message history ---
+    // --- Handler for receiving message history (or initial messages) ---
     function onMessageHistory(historyMessages) {
-        console.log('Received message history:', historyMessages);
-        // Replace the current messages with the history
-        setMessages(historyMessages);
-        setLoadingHistory(false); // Finished loading
+        console.log('Received message history/initial messages:', historyMessages);
+        setMessages(historyMessages); // Replace current messages
+        // setLoadingHistory(false); // REMOVED
     }
 
 
     // Handler for receiving the list of online users
     function onUserList(users) {
       console.log('Received user list:', users);
-       // Filter out the current user from the list displayed in the sidebar
       const filteredUsers = users.filter(userName => userName !== (user ? user.name : null));
       setUserList(filteredUsers);
-
-      // Optional: If the currently selected private recipient goes offline, handle it here
-      // ... (logic as before)
     }
 
     // Handler for server-side errors
     function onError(error) {
         console.error('Socket Error:', error);
-        alert(`Socket error: ${error}`); // Simple alert for demo
-        setLoadingHistory(false); // Stop loading if error occurs during history fetch
+        alert(`Socket error: ${error}`);
+        // setLoadingHistory(false); // REMOVED
     }
 
 
@@ -114,16 +101,16 @@ function Home() {
         setMessages([]);
         setUserList([]);
         setSelectedRecipient('');
-        setLoadingHistory(false);
+        // setLoadingHistory(false); // REMOVED
     }
 
     // Register socket event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('chat message', onChatMessage);         // Listen for NEW messages
-    socket.on('message_history', onMessageHistory);   // Listen for history
-    socket.on('users', onUserList);                   // Listen for user list updates
-    socket.on('error', onError);                      // Listen for server errors
+    socket.on('chat message', onChatMessage);
+    socket.on('message_history', onMessageHistory);
+    socket.on('users', onUserList);
+    socket.on('error', onError);
 
 
     // Cleanup listeners and disconnect on component unmount or user change (logout)
@@ -136,17 +123,12 @@ function Home() {
       socket.off('users', onUserList);
       socket.off('error', onError);
 
-      // If socket is connected and we're cleaning up because user is no longer logged in, disconnect.
-      // If cleaning up due to component unmount but user IS still logged in (e.g., routing),
-      // you might NOT want to disconnect the socket if other parts of the app use it.
-      // Adjust this logic based on your overall app architecture.
       if (socket.connected && !user?.name) {
          console.log('Disconnecting socket due to logout/user change.');
          socket.disconnect();
       }
-       // If component unmounts *while* user is logged in, the socket remains connected for potential reuse.
     };
-  }, [user, selectedRecipient]); // Effect depends on 'user' and 'selectedRecipient'
+  }, [user, selectedRecipient]);
 
   // Request user list when connection is established AND user is logged in
   useEffect(() => {
@@ -158,10 +140,7 @@ function Home() {
 
   // --- Handler for Logout ---
   const handleLogout = () => {
-    // Perform AuthContext logout
     logout();
-    // The useEffect cleanup will handle socket disconnect when 'user' state changes to null
-    // Navigate to login page is often handled by AuthContext redirect or router setup
   };
 
   // --- Handler for Sending Message ---
@@ -169,37 +148,27 @@ function Home() {
     event.preventDefault();
     const trimmedValue = inputValue.trim();
 
-    // Only send if connected, input not empty, user is logged in
     if (trimmedValue && socket.connected && user?.name) {
       const messageData = {
         text: trimmedValue,
-        // If selectedRecipient is '', it means broadcast.
-        // Pass null to the server, server interprets null/undefined/'' as broadcast.
         recipient: selectedRecipient === '' ? null : selectedRecipient,
       };
-
-      // Emit a single 'send_message' event
       socket.emit('send_message', messageData);
-
-      setInputValue(''); // Clear input field
+      setInputValue('');
     }
   };
 
   // --- Handler for Selecting a Conversation (Clicking a user in the sidebar) ---
   const handleConversationSelect = (userName) => {
      console.log('Selecting conversation with:', userName);
-     // Only switch if it's a different user or if current is broadcast
      if (selectedRecipient !== userName) {
-        setSelectedRecipient(userName); // Set the recipient state
+        setSelectedRecipient(userName);
         setMessages([]); // Clear current messages immediately
-        setLoadingHistory(true); // Start loading indicator
 
-        // Request message history for this conversation
         if (socket.connected) {
-            socket.emit('get_messages', userName);
+            socket.emit('get_messages', userName); // Request messages for this conversation
         } else {
-            console.warn('Socket not connected, cannot fetch history.');
-            setLoadingHistory(false); // Stop loading if not connected
+            console.warn('Socket not connected, cannot fetch messages.');
         }
      }
   };
@@ -207,18 +176,19 @@ function Home() {
   // --- Handler for Selecting Broadcast ("Everyone") ---
   const handleSelectEveryone = () => {
       console.log('Selecting broadcast chat.');
-       // Only switch if current is not already broadcast
       if (selectedRecipient !== '') {
-         setSelectedRecipient(''); // Set recipient state to empty string for broadcast
+         setSelectedRecipient('');
          setMessages([]); // Clear current messages immediately
-         setLoadingHistory(true); // Start loading indicator
 
-         // Request broadcast history
          if (socket.connected) {
-            socket.emit('get_messages', ''); // Send empty string or null for broadcast
+            socket.emit('get_messages', ''); // Request broadcast messages
          } else {
-             console.warn('Socket not connected, cannot fetch history.');
-             setLoadingHistory(false); // Stop loading if not connected
+             console.warn('Socket not connected, cannot fetch messages.');
+         }
+      } else if (selectedRecipient === '' && messages.length === 0) {
+        // If already on broadcast and no messages, fetch them (e.g., on initial connect)
+        if (socket.connected) {
+            socket.emit('get_messages', '');
          }
       }
   };
@@ -231,7 +201,7 @@ function Home() {
     // Helper to get a simple dummy avatar based on the first letter of the name
     const getDummyAvatar = (name) => {
         const initial = name ? name.charAt(0).toUpperCase() : '?';
-        const colorHash = name ? name.charCodeAt(0) * 10 % 900 : 0; // Handle null/undefined name
+        const colorHash = name ? name.charCodeAt(0) * 10 % 900 : 0;
         return `https://via.placeholder.com/40/${colorHash}/ffffff?text=${initial}`;
     };
 
@@ -247,14 +217,13 @@ function Home() {
        <header className="app-header-top">
              <div className="header-app-title">ChatApp</div>
              <div className="header-actions">
-                {/* Assuming 'admin' check is on user object from AuthContext */}
                 {user?.isAdmin && <span className="admin-indicator">admin</span>}
                 {user ? (
                     <>
                        <span className="logged-in-user-name">{user.name}</span>
                        <button className="header-button" onClick={handleLogout}>Logout</button>
                     </>
-                ) : null} {/* Assuming auth context handles login redirection */}
+                ) : null}
             </div>
         </header>
 
@@ -276,7 +245,6 @@ function Home() {
             </div>
           </div>
           <div className="conversation-list">
-              {/* Option for sending to everyone */}
               {isConnected && user && (
                   <div
                       className={`conversation-item ${selectedRecipient === '' ? 'selected' : ''}`}
@@ -287,7 +255,6 @@ function Home() {
                   </div>
               )}
 
-            {/* Map through the filtered online users list */}
             {isConnected && user && filteredUserList.map(userName => (
                 <div
                     key={userName}
@@ -299,7 +266,6 @@ function Home() {
                 </div>
             ))}
 
-            {/* Messages/Placeholders for empty states in sidebar */}
             {!user && (
                  <div className="sidebar-message">Log in to see online users.</div>
              )}
@@ -318,14 +284,12 @@ function Home() {
 
         {/* Right Main Chat Area */}
         <main className="chat-main">
-          {/* Chat Header (Recipient Info) - Show if user is logged in */}
           {user ? (
                <div className="chat-header-main">
                    <img src={currentChatPartnerAvatar} alt={currentChatPartnerName} className="avatar" />
                    <h3>{currentChatPartnerName}</h3>
-                   {/* Add other header elements */}
                </div>
-           ) : ( // Placeholder header if not logged in
+           ) : (
                <div className="chat-header-main">
                    <h3>Login to chat</h3>
                </div>
@@ -334,42 +298,34 @@ function Home() {
 
           {/* Messages Area */}
           <div className="messages-area-main">
-             {/* Message indicating who you are chatting with */}
              {user && (
                   <div className="chatting-with-indicator">
                        {selectedRecipient === '' ? 'You are in the broadcast chat.' : `You are chatting with ${selectedRecipient}.`}
-                       {loadingHistory && ' Loading history...'} {/* Show loading indicator */}
+                       {/* REMOVED: {loadingHistory && ' Loading history...'} */}
                   </div>
              )}
 
-            {/* Display messages */}
-            {/* Only show messages if user is logged in */}
             {user && messages.map((msg, index) => (
               <div
-                key={msg._id || index} // Use message ID as key if available, fallback to index
+                key={msg._id || index}
                 className={`message ${msg.senderId === (user ? user.name : null) ? 'my-message' : 'other-message'}`}
               >
                 <span className="message-sender">
-                   {/* Display sender name (show "You" for current user) */}
                    {msg.senderId === (user ? user.name : null) ? 'You' : msg.senderName || 'Unknown'}
-
-                   {/* Indicate if it's a private message and who the recipient is */}
                    {msg.private && (
-                       msg.senderId === (user ? user.name : null) // If sender is YOU
-                           ? (msg.recipient ? ` (to ${msg.recipient})` : ' (private)') // "You (to John)"
-                           : (msg.recipient === (user ? user.name : null) ? ' (to You)' : ' (private)') // "Alice (to You)"
+                       msg.senderId === (user ? user.name : null)
+                           ? (msg.recipient ? ` (to ${msg.recipient})` : ' (private)')
+                           : (msg.recipient === (user ? user.name : null) ? ' (to You)' : ' (private)')
                    )}
                   :
                 </span>
                 <span className="message-text">{msg.text}</span>
               </div>
             ))}
-             {/* This empty div is the target for auto-scrolling */}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input Area */}
-          {/* Show input if connected and logged in */}
           {isConnected && user ? (
             <form onSubmit={handleSendMessage} className="message-input-area">
               <input
@@ -377,16 +333,16 @@ function Home() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder={selectedRecipient === '' ? "Type a broadcast message..." : `Message ${selectedRecipient}...`}
-                disabled={!isConnected || !user || loadingHistory} // Disable input while loading history
+                disabled={!isConnected || !user } // REMOVED: || loadingHistory
               />
               <button
                 type="submit"
-                disabled={!isConnected || !inputValue.trim() || !user || loadingHistory} // Disable send button
+                disabled={!isConnected || !inputValue.trim() || !user } // REMOVED: || loadingHistory
               >
                 Send
               </button>
             </form>
-          ) : ( // Placeholder input area if not connected or not logged in
+          ) : (
               <div className="message-input-area">
                   <input
                     type="text"
