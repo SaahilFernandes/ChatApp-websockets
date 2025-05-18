@@ -130,5 +130,80 @@ router.post('/register', [
       res.status(500).json({ error: 'Server error during registration' });
     }
   });
+router.get('/conversations', validateToken, async (req, res) => {
+    try {
+        const userId = req.name; // The user's ID is available from the validateToken middleware.
+
+        // Find all unique users the current user has had conversations with.
+        const conversations = await Message.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { senderName: userId },
+                        { recipientName: userId }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    otherUser: {
+                        $cond: {
+                            if: { $eq: ["$senderName", userId] },
+                            then: "$recipientName",
+                            else: "$senderName"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$otherUser",
+                }
+            },
+            {
+                $match: {
+                    _id: { $ne: null }  // Exclude broadcast chats (recipientName: null)
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    otherUser: "$_id"
+                }
+            }
+        ]);
+
+        // Extract usernames from the aggregation result
+        const conversationUsernames = conversations.map(item => item.otherUser);
+
+        console.log(`Past conversations for ${userId}:`, conversationUsernames);
+        res.status(200).json(conversationUsernames);
+    } catch (error) {
+        console.error("Error fetching past conversations:", error);
+        res.status(500).json({ error: "Could not retrieve past conversations" });
+    }
+});
+router.get('/search', validateToken, async (req, res) => {
+    const { query } = req.query; //get the request parameters.
+
+    if (!query || query.trim() === '') {
+        return res.status(400).json({ error: "Search query is required" });
+    }
+
+    try {
+        // Use a case-insensitive regex to search by name or email
+        const users = await User.find({
+            $or: [
+                { name: { $regex:  new RegExp(`^${query}$`, 'i')  } }, // Case-insensitive name search
+                { email: { $regex: new RegExp(`^${query}$`, 'i') } }  // Case-insensitive email search
+            ]
+        }).select('-password'); // Exclude the password field
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.error('Error searching users:', error);
+        res.status(500).json({ error: 'Failed to search users' });
+    }
+});
 
 export default router;
