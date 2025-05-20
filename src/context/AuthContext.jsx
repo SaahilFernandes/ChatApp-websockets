@@ -1,84 +1,64 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { jwtDecode } from 'jwt-decode'; // Corrected import
 
-// Create the Auth context
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-// Create a provider component for the Auth context
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // Will store decoded user info: { id, name, email, etc. }
+  const [token, setToken] = useState(localStorage.getItem('accessToken'));
 
-  // Check for stored token on initial load
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    
-    setLoading(false);
-  }, []);
-
-  // Login function
-  const login = (token, userData = null) => {
-    // If userData is not provided, extract it from the JWT (simplified approach)
-    let user = userData;
-    
-    if (!user && token) {
+    const storedToken = localStorage.getItem('accessToken');
+    if (storedToken) {
       try {
-        // Extract user info from token (basic implementation)
-        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        user = {
-          name: tokenPayload.name,
-          userId: tokenPayload.userId
-        };
+        const decodedUser = jwtDecode(storedToken); // Decode the token
+        // Optional: Check token expiration (decodedUser.exp * 1000 < Date.now())
+        // If expired, clear localStorage and setUser(null)
+        setUser({
+          id: decodedUser.userId, // Assuming your JWT payload has userId
+          name: decodedUser.name,   // Assuming your JWT payload has name
+          email: decodedUser.email  // Assuming your JWT payload has email
+        });
+        setToken(storedToken);
       } catch (error) {
-        console.error('Failed to decode token payload:', error);
+        console.error("Invalid token:", error);
+        localStorage.removeItem('accessToken');
+        setUser(null);
+        setToken(null);
       }
     }
-    
-    if (user) {
-      // Store token and user info in local storage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Update state
-      setToken(token);
-      setUser(user);
+  }, []); // Runs once on component mount
+
+  const login = (newToken) => {
+    localStorage.setItem('accessToken', newToken);
+    try {
+      const decodedUser = jwtDecode(newToken);
+      setUser({
+        id: decodedUser.userId,
+        name: decodedUser.name,
+        email: decodedUser.email
+      });
+      setToken(newToken);
+    } catch (error) {
+      console.error("Error decoding token on login:", error);
+      // Handle error, maybe clear token and user
     }
   };
 
-  // Logout function
   const logout = () => {
-    // Remove token and user info from local storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Update state
-    setToken(null);
+    localStorage.removeItem('accessToken');
     setUser(null);
-  };
-
-  // Context value
-  const contextValue = {
-    user,
-    token,
-    login,
-    logout,
-    loading
+    setToken(null);
+    // Potentially redirect to login page
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-// Custom hook to use the Auth context
-export function useAuth() {
+export const useAuth = () => {
   return useContext(AuthContext);
-}
+};

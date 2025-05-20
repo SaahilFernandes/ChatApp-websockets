@@ -489,3 +489,61 @@ body {
 .other-message .message-sender {
     color: rgba(0, 0, 0, 0.6); /* Darker grey for sender in grey bubble */
 }
+/* frontend/css/chat.css (Add these styles) */
+
+/* Style for the message container to position the delete button */
+.message {
+    position: relative; /* Needed for absolute positioning of the button */
+    /* Add padding or margin to make space for the button */
+    /* Example: Add padding-right to my-message bubbles */
+}
+
+.message.my-message {
+    /* Add extra padding on the right to make space for the delete button */
+    padding: 10px 30px 10px 15px; /* top right bottom left */
+     /* Or use margin-right to shift the bubble itself */
+}
+
+/* Style for the delete button */
+.delete-message-button {
+    position: absolute;
+    top: 50%; /* Position vertically centered */
+    transform: translateY(-50%); /* Fine-tune vertical centering */
+    /* Position based on whether it's my message or other message */
+    /* For 'my-message' (right side), position on the left edge of the bubble or just outside */
+    /* For 'other-message' (left side), position on the right edge of the bubble or just outside */
+    right: 5px; /* Position 5px from the right edge of the message div */
+
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0; /* Remove default button padding */
+    opacity: 0; /* Initially hidden */
+    visibility: hidden; /* Initially hidden */
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    color: #888; /* Default icon color */
+}
+
+/* Make the delete button visible when hovering over the message */
+.message:hover .delete-message-button {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Optional: Adjust position slightly for 'other-message' if you want */
+.message.other-message .delete-message-button {
+    /* left: 5px; */ /* If you wanted it on the left for other messages */
+    right: auto; /* Remove right positioning */
+    left: 5px; /* Example: show on the left for other messages */
+    fill: #888888; /* Default icon color */
+}
+
+/* Style for the icon itself */
+.delete-message-button svg {
+    display: block; /* Remove extra space below SVG */
+}
+
+/* Optional: Hover effect for the button */
+.delete-message-button:hover {
+    color: #f44336; /* Red color on hover */
+}

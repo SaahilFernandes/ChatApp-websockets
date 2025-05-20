@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+Dockerfile
+.vscode
+README.md
+# Add any other files/folders that are local to your dev environment
